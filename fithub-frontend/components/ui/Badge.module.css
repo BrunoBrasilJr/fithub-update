@@ -1,0 +1,30 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.ativa {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--green);
+}
+.inativa {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
+}
+.pendente {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
+}
+.admin {
+  background: rgba(139, 92, 246, 0.1);
+  color: #8b5cf6;
+}
+.aluno {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}

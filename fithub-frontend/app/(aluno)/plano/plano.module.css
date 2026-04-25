@@ -1,0 +1,61 @@
+.page {
+  animation: fadeIn 0.3s ease both;
+}
+.header {
+  margin-bottom: 2rem;
+}
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: 0.25rem;
+}
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 2rem;
+  max-width: 480px;
+}
+.planName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+.planValue {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--green);
+  letter-spacing: -0.04em;
+  margin-bottom: 1.5rem;
+}
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.infoRow:last-child {
+  border-bottom: none;
+}
+.infoLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+.infoValue {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.empty {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}

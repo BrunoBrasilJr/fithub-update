@@ -1,0 +1,13 @@
+# Backend
+fithub-backend/target/
+fithub-backend/.mvn/
+fithub-backend/*.class
+
+# Frontend
+fithub-frontend/.next/
+fithub-frontend/node_modules/
+fithub-frontend/.env.local
+
+# Sistema
+.DS_Store
+Thumbs.db
