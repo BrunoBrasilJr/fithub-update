@@ -525,7 +525,7 @@ export default function TreinoPage() {
               Evolução — {evolucaoEx.nome}
             </p>
             {loadingEvolucao ? (
-              <p className={styles.evolucaoEmpty}>Carregando...</p>
+              <p className={styles.evolucaoEmpty}>Carregando</p>
             ) : evolucaoData.length === 0 ? (
               <p className={styles.evolucaoEmpty}>
                 Nenhum registro de carga ainda.
