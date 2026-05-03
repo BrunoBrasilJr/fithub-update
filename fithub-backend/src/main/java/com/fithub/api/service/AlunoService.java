@@ -62,6 +62,8 @@ public class AlunoService {
                 .email(request.getEmail())
                 .telefone(request.getTelefone())
                 .dataNascimento(request.getDataNascimento() != null ? LocalDate.parse(request.getDataNascimento()) : null)
+                .observacoes(request.getObservacoes())
+                .fotoUrl(request.getFotoUrl())
                 .user(user)
                 .build();
 
@@ -75,10 +77,19 @@ public class AlunoService {
         aluno.setNome(request.getNome());
         aluno.setTelefone(request.getTelefone());
         aluno.setAtivo(request.isAtivo());
+        aluno.setObservacoes(request.getObservacoes());
+        aluno.setFotoUrl(request.getFotoUrl());
         if (request.getDataNascimento() != null) {
             aluno.setDataNascimento(LocalDate.parse(request.getDataNascimento()));
         }
 
+        return AlunoResponse.from(alunoRepository.save(aluno));
+    }
+
+    public AlunoResponse atualizarFoto(UUID id, String fotoUrl) {
+        Aluno aluno = alunoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
+        aluno.setFotoUrl(fotoUrl);
         return AlunoResponse.from(alunoRepository.save(aluno));
     }
 

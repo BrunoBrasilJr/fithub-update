@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { User } from "@/types";
 
-export function useAuth(requiredRole?: "ADMIN" | "ALUNO") {
+export function useAuth(requiredRole?: "ADMIN" | "ALUNO" | "PERSONAL") {
   const router = useRouter();
 
   useEffect(() => {
@@ -17,7 +17,11 @@ export function useAuth(requiredRole?: "ADMIN" | "ALUNO") {
     if (requiredRole) {
       const user: User = JSON.parse(userStr);
       if (user.role !== requiredRole && requiredRole === "ADMIN") {
-        router.push("/painel");
+        if (user.role === "PERSONAL") {
+          router.push("/personal-painel");
+        } else {
+          router.push("/painel");
+        }
         return;
       }
     }

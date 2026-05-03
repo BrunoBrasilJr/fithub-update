@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import type { Aluno } from "@/types";
@@ -18,11 +18,21 @@ export default function AlunosPage() {
   const [modalDeletar, setModalDeletar] = useState<Aluno | null>(null);
   const [modalEditar, setModalEditar] = useState<Aluno | null>(null);
   const [saving, setSaving] = useState(false);
+  const [fotoPreview, setFotoPreview] = useState<string>("");
+  const [cameraAtiva, setCameraAtiva] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
   const [form, setForm] = useState({
     nome: "",
     email: "",
     telefone: "",
     dataNascimento: "",
+    observacoes: "",
+    fotoUrl: "",
+    ativo: true,
   });
 
   function fetchAlunos() {
@@ -36,19 +46,92 @@ export default function AlunosPage() {
     fetchAlunos();
   }, []);
 
+  function pararCamera() {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+    }
+    setCameraAtiva(false);
+  }
+
+  async function abrirCamera() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      streamRef.current = stream;
+      setCameraAtiva(true);
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
+        }
+      }, 100);
+    } catch {
+      alert("Não foi possível acessar a câmera.");
+    }
+  }
+
+  function tirarFoto() {
+    if (!videoRef.current || !canvasRef.current) return;
+    const canvas = canvasRef.current;
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
+    const base64 = canvas.toDataURL("image/jpeg", 0.7);
+    setFotoPreview(base64);
+    setForm((f) => ({ ...f, fotoUrl: base64 }));
+    pararCamera();
+  }
+
+  function handleFotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+      alert("A imagem deve ter no máximo 500KB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = reader.result as string;
+      setFotoPreview(base64);
+      setForm((f) => ({ ...f, fotoUrl: base64 }));
+    };
+    reader.readAsDataURL(file);
+  }
+
   function openEditar(aluno: Aluno) {
     setForm({
       nome: aluno.nome,
       email: aluno.email,
       telefone: aluno.telefone || "",
       dataNascimento: aluno.dataNascimento || "",
+      observacoes: aluno.observacoes || "",
+      fotoUrl: aluno.fotoUrl || "",
+      ativo: aluno.ativo,
     });
+    setFotoPreview(aluno.fotoUrl || "");
+    setCameraAtiva(false);
     setModalEditar(aluno);
   }
 
   function openCriar() {
-    setForm({ nome: "", email: "", telefone: "", dataNascimento: "" });
+    setForm({
+      nome: "",
+      email: "",
+      telefone: "",
+      dataNascimento: "",
+      observacoes: "",
+      fotoUrl: "",
+      ativo: true,
+    });
+    setFotoPreview("");
+    setCameraAtiva(false);
     setModalCriar(true);
+  }
+
+  function fecharModal() {
+    pararCamera();
+    setModalCriar(false);
+    setModalEditar(null);
   }
 
   async function handleCriar() {
@@ -56,7 +139,7 @@ export default function AlunosPage() {
     try {
       await api.post("/admin/alunos", form);
       fetchAlunos();
-      setModalCriar(false);
+      fecharModal();
     } finally {
       setSaving(false);
     }
@@ -66,12 +149,9 @@ export default function AlunosPage() {
     if (!modalEditar) return;
     setSaving(true);
     try {
-      await api.put(`/admin/alunos/${modalEditar.id}`, {
-        ...form,
-        ativo: true,
-      });
+      await api.put(`/admin/alunos/${modalEditar.id}`, form);
       fetchAlunos();
-      setModalEditar(null);
+      fecharModal();
     } finally {
       setSaving(false);
     }
@@ -151,9 +231,25 @@ export default function AlunosPage() {
         ) : (
           alunos.map((aluno) => (
             <div key={aluno.id} className={styles.tableRow}>
-              <div>
-                <p className={styles.cellName}>{aluno.nome}</p>
-                <p className={styles.cellSub}>{aluno.email}</p>
+              <div className={styles.alunoCell}>
+                {aluno.fotoUrl ? (
+                  <img
+                    src={aluno.fotoUrl}
+                    alt={aluno.nome}
+                    className={styles.alunoAvatar}
+                  />
+                ) : (
+                  <div className={styles.alunoAvatarPlaceholder}>
+                    {aluno.nome.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <p className={styles.cellName}>{aluno.nome}</p>
+                  <p className={styles.cellSub}>{aluno.email}</p>
+                  {aluno.observacoes && (
+                    <p className={styles.cellObs}>⚠ {aluno.observacoes}</p>
+                  )}
+                </div>
               </div>
               <span className={styles.cell}>{aluno.telefone || "—"}</span>
               <Badge
@@ -187,19 +283,10 @@ export default function AlunosPage() {
       {(modalCriar || modalEditar) && (
         <Modal
           title={modalCriar ? "Novo Aluno" : "Editar Aluno"}
-          onClose={() => {
-            setModalCriar(false);
-            setModalEditar(null);
-          }}
+          onClose={fecharModal}
           footer={
             <>
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  setModalCriar(false);
-                  setModalEditar(null);
-                }}
-              >
+              <Button variant="secondary" onClick={fecharModal}>
                 Cancelar
               </Button>
               <Button
@@ -212,6 +299,134 @@ export default function AlunosPage() {
           }
         >
           <div className={styles.form}>
+            <div className={styles.fotoSection}>
+              {cameraAtiva ? (
+                <div className={styles.cameraWrapper}>
+                  <video
+                    ref={videoRef}
+                    className={styles.cameraVideo}
+                    autoPlay
+                    playsInline
+                    muted
+                  />
+                  <canvas ref={canvasRef} style={{ display: "none" }} />
+                  <div className={styles.cameraBtns}>
+                    <Button onClick={tirarFoto}>Tirar Foto</Button>
+                    <Button variant="secondary" onClick={pararCamera}>
+                      Cancelar
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className={styles.fotoWrapper}>
+                    {fotoPreview ? (
+                      <img
+                        src={fotoPreview}
+                        alt="Preview"
+                        className={styles.fotoPreview}
+                      />
+                    ) : (
+                      <div className={styles.fotoPlaceholder}>
+                        <svg
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                        >
+                          <circle
+                            cx="12"
+                            cy="8"
+                            r="4"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                          />
+                          <path
+                            d="M4 20C4 16.6863 7.58172 14 12 14C16.4183 14 20 16.6863 20 20"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                          />
+                        </svg>
+                        <span>Sem foto</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.fotoBtns}>
+                    <Button variant="secondary" onClick={abrirCamera}>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path
+                          d="M1 5C1 4.44772 1.44772 4 2 4H3.5L5 2H11L12.5 4H14C14.5523 4 15 4.44772 15 5V13C15 13.5523 14.5523 14 14 14H2C1.44772 14 1 13.5523 1 13V5Z"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                        />
+                        <circle
+                          cx="8"
+                          cy="9"
+                          r="2.5"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                        />
+                      </svg>
+                      Usar webcam
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => fileRef.current?.click()}
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      >
+                        <path
+                          d="M8 2V10M8 2L5 5M8 2L11 5"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M2 12V14H14V12"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      Upload
+                    </Button>
+                    {fotoPreview && (
+                      <Button
+                        variant="danger"
+                        onClick={() => {
+                          setFotoPreview("");
+                          setForm((f) => ({ ...f, fotoUrl: "" }));
+                        }}
+                      >
+                        Remover
+                      </Button>
+                    )}
+                  </div>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleFotoChange}
+                  />
+                  <p className={styles.fotoHint}>
+                    Webcam ou upload · Máx 500KB
+                  </p>
+                </>
+              )}
+            </div>
+
             <div className={styles.formRow}>
               <Input
                 label="Nome"
@@ -242,6 +457,18 @@ export default function AlunosPage() {
                 onChange={(e) =>
                   setForm({ ...form, dataNascimento: e.target.value })
                 }
+              />
+            </div>
+            <div className={styles.field}>
+              <label className={styles.obsLabel}>Observações</label>
+              <textarea
+                className={styles.textarea}
+                placeholder="Restrições médicas, lesões, observações gerais..."
+                value={form.observacoes}
+                onChange={(e) =>
+                  setForm({ ...form, observacoes: e.target.value })
+                }
+                rows={3}
               />
             </div>
           </div>

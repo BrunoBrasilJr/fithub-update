@@ -9,14 +9,14 @@ import styles from "./plano.module.css";
 
 export default function PlanoPage() {
   const { getUser } = useAuth();
-  const user = getUser();
   const [matricula, setMatricula] = useState<Matricula | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const user = getUser();
     if (!user) return;
     api
-      .get<Matricula[]>(`/admin/matriculas/aluno/${user.id}`)
+      .get<Matricula[]>(`/aluno/matriculas?alunoId=${user.id}`)
       .then((data) => {
         const ativa = data.find((m) => m.status === "ATIVA") || data[0] || null;
         setMatricula(ativa);

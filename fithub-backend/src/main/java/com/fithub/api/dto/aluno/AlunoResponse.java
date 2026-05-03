@@ -3,7 +3,6 @@ package com.fithub.api.dto.aluno;
 import com.fithub.api.entity.Aluno;
 import lombok.Builder;
 import lombok.Data;
-
 import java.util.UUID;
 
 @Data
@@ -14,6 +13,8 @@ public class AlunoResponse {
     private String email;
     private String telefone;
     private String dataNascimento;
+    private String observacoes;
+    private String fotoUrl;
     private boolean ativo;
     private String createdAt;
 
@@ -24,6 +25,8 @@ public class AlunoResponse {
                 .email(aluno.getEmail())
                 .telefone(aluno.getTelefone())
                 .dataNascimento(aluno.getDataNascimento() != null ? aluno.getDataNascimento().toString() : null)
+                .observacoes(aluno.getObservacoes())
+                .fotoUrl(aluno.getFotoUrl())
                 .ativo(aluno.isAtivo())
                 .createdAt(aluno.getCreatedAt().toString())
                 .build();

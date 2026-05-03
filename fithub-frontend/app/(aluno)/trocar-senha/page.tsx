@@ -33,12 +33,19 @@ export default function TrocarSenhaPage() {
     setSaving(true);
     setError("");
     try {
-      await api.put("/aluno/trocar-senha", {
+      await api.put("/user/trocar-senha", {
         senhaAtual: form.senhaAtual,
         novaSenha: form.novaSenha,
       });
       setSuccess(true);
-      setTimeout(() => router.push("/aluno/painel"), 2000);
+      const user = getUser();
+      setTimeout(() => {
+        if (user?.role === "PERSONAL") {
+          router.push("/personal-painel");
+        } else {
+          router.push("/painel");
+        }
+      }, 2000);
     } catch {
       setError("Senha atual incorreta.");
     } finally {

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useState, useEffect } from "react";
+import type { User } from "@/types";
 import styles from "./SidebarAluno.module.css";
 
 const navItems = [
@@ -65,6 +67,22 @@ const navItems = [
     ),
   },
   {
+    href: "/historico",
+    label: "Histórico",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="10" r="7" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M10 6V10L13 12"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+  },
+  {
     href: "/plano",
     label: "Meu Plano",
     icon: (
@@ -106,8 +124,13 @@ const navItems = [
 
 export function SidebarAluno() {
   const pathname = usePathname();
-  const { getUser, logout } = useAuth();
-  const user = getUser();
+  const { logout } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("fithub_user");
+    if (userStr) setUser(JSON.parse(userStr));
+  }, []);
 
   return (
     <aside className={styles.sidebar}>

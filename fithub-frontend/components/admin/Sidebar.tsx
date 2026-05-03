@@ -55,6 +55,70 @@ const navItems = [
           </svg>
         ),
       },
+      {
+        href: "/vencimentos",
+        label: "Vencimentos",
+        icon: (
+          <svg className={styles.navIcon} viewBox="0 0 20 20" fill="none">
+            <circle
+              cx="8"
+              cy="8"
+              r="6"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M8 5V8.5M8 11H8.01"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <path
+              d="M14 14L18 18"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        ),
+      },
+      {
+        href: "/inadimplentes",
+        label: "Inadimplentes",
+        icon: (
+          <svg className={styles.navIcon} viewBox="0 0 20 20" fill="none">
+            <path
+              d="M10 2L12.5 7.5H18L13.5 11L15.5 17L10 13.5L4.5 17L6.5 11L2 7.5H7.5L10 2Z"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ),
+      },
+      {
+        href: "/aniversariantes",
+        label: "Aniversariantes",
+        icon: (
+          <svg className={styles.navIcon} viewBox="0 0 20 20" fill="none">
+            <path
+              d="M10 4C10 4 8 6 8 8C8 9.10457 8.89543 10 10 10C11.1046 10 12 9.10457 12 8C12 6 10 4 10 4Z"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <rect
+              x="4"
+              y="12"
+              width="12"
+              height="6"
+              rx="1"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path d="M4 14H16" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+        ),
+      },
     ],
   },
   {
@@ -133,12 +197,32 @@ const navItems = [
         ),
       },
       {
-        href: "/treinos",
-        label: "Treinos",
+        href: "/funcionarios",
+        label: "Funcionários",
         icon: (
           <svg className={styles.navIcon} viewBox="0 0 20 20" fill="none">
+            <circle
+              cx="7"
+              cy="6"
+              r="3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
             <path
-              d="M2 10H4M16 10H18M4 10C4 10 4 7 7 7C10 7 10 13 13 13C16 13 16 10 16 10"
+              d="M1 17C1 14.2386 3.68629 12 7 12"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+            <circle
+              cx="14"
+              cy="10"
+              r="3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M11 17C11 14.7909 12.3431 13 14 13C15.6569 13 17 14.7909 17 17"
               stroke="currentColor"
               strokeWidth="1.5"
               strokeLinecap="round"

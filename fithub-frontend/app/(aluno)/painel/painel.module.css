@@ -1,9 +1,11 @@
 .page {
   animation: fadeIn 0.3s ease both;
 }
+
 .header {
   margin-bottom: 2rem;
 }
+
 .greeting {
   font-size: 1.5rem;
   font-weight: 700;
@@ -11,22 +13,54 @@
   letter-spacing: -0.025em;
   margin-bottom: 0.25rem;
 }
+
 .subtitle {
   font-size: 0.875rem;
   color: var(--text-secondary);
 }
+
+.alertaDanger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--error-subtle);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  color: var(--error);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease both;
+}
+
+.alertaWarning {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  color: var(--warning);
+  font-size: 0.875rem;
+  margin-bottom: 1.5rem;
+  animation: fadeIn 0.3s ease both;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1rem;
   margin-bottom: 2rem;
 }
+
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 1.5rem;
 }
+
 .cardIcon {
   width: 36px;
   height: 36px;
@@ -38,10 +72,12 @@
   color: var(--green);
   margin-bottom: 1rem;
 }
+
 .cardIcon svg {
   width: 18px;
   height: 18px;
 }
+
 .cardValue {
   font-size: 1.5rem;
   font-weight: 700;
@@ -49,13 +85,16 @@
   letter-spacing: -0.03em;
   margin-bottom: 0.25rem;
 }
+
 .cardLabel {
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
+
 .section {
   margin-bottom: 2rem;
 }
+
 .sectionTitle {
   font-size: 1rem;
   font-weight: 600;
@@ -63,11 +102,13 @@
   margin-bottom: 1rem;
   letter-spacing: -0.02em;
 }
+
 .treinos {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
+
 .treinoCard {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -77,19 +118,23 @@
   align-items: center;
   justify-content: space-between;
 }
+
 .treinoNome {
   font-weight: 500;
   color: var(--text-primary);
   margin-bottom: 0.25rem;
 }
+
 .treinoDia {
   font-size: 0.8125rem;
   color: var(--text-muted);
 }
+
 .treinoCount {
   font-size: 0.8125rem;
   color: var(--text-secondary);
 }
+
 .empty {
   color: var(--text-muted);
   font-size: 0.875rem;

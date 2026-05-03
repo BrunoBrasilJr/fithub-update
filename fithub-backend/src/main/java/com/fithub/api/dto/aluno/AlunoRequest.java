@@ -8,5 +8,7 @@ public class AlunoRequest {
     private String email;
     private String telefone;
     private String dataNascimento;
+    private String observacoes;
+    private String fotoUrl;
     private boolean ativo;
 }

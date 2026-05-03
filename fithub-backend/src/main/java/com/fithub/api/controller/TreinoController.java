@@ -1,5 +1,6 @@
 package com.fithub.api.controller;
 
+import com.fithub.api.dto.treino.HistoricoTreinoResponse;
 import com.fithub.api.dto.treino.TreinoRequest;
 import com.fithub.api.dto.treino.TreinoResponse;
 import com.fithub.api.service.TreinoService;
@@ -7,7 +8,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -48,12 +51,29 @@ public class TreinoController {
     }
 
     @GetMapping("/aluno/treinos")
-    public ResponseEntity<List<TreinoResponse>> listarMeusTreinos(@RequestParam UUID alunoId) {
-        return ResponseEntity.ok(treinoService.listarPorAluno(alunoId));
+    public ResponseEntity<List<TreinoResponse>> listarMeusTreinos(Principal principal) {
+        return ResponseEntity.ok(treinoService.listarPorEmail(principal.getName()));
     }
 
     @GetMapping("/aluno/treinos/{id}")
     public ResponseEntity<TreinoResponse> buscarMeuTreino(@PathVariable UUID id) {
         return ResponseEntity.ok(treinoService.buscarPorId(id));
+    }
+
+    @PostMapping("/aluno/treinos/{id}/concluir")
+    public ResponseEntity<Void> concluirTreino(@PathVariable UUID id, Principal principal) {
+        treinoService.concluirPorEmail(id, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/aluno/treinos/{id}/concluido-semana")
+    public ResponseEntity<Map<String, Boolean>> verificarConcluidoSemana(@PathVariable UUID id, Principal principal) {
+        boolean concluido = treinoService.jaConcluidoSemana(id, principal.getName());
+        return ResponseEntity.ok(Map.of("concluido", concluido));
+    }
+
+    @GetMapping("/aluno/historico")
+    public ResponseEntity<List<HistoricoTreinoResponse>> historico(Principal principal) {
+        return ResponseEntity.ok(treinoService.historicoPorEmail(principal.getName()));
     }
 }

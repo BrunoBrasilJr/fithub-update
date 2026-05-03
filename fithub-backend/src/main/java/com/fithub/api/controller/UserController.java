@@ -7,9 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/aluno")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -19,5 +20,17 @@ public class UserController {
     public ResponseEntity<Void> trocarSenha(Principal principal, @RequestBody TrocaSenhaRequest request) {
         userService.trocarSenha(principal.getName(), request);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/foto")
+    public ResponseEntity<Void> atualizarFoto(Principal principal, @RequestBody Map<String, String> body) {
+        userService.atualizarFoto(principal.getName(), body.get("fotoUrl"));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/foto")
+    public ResponseEntity<Map<String, String>> buscarFoto(Principal principal) {
+        String fotoUrl = userService.buscarFoto(principal.getName());
+        return ResponseEntity.ok(Map.of("fotoUrl", fotoUrl != null ? fotoUrl : ""));
     }
 }

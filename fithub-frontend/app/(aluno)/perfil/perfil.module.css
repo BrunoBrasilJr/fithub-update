@@ -22,9 +22,15 @@
   padding: 2rem;
   max-width: 480px;
 }
+.avatarWrapper {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 1.5rem;
+}
 .avatar {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: var(--green-subtle);
   display: flex;
@@ -33,7 +39,31 @@
   color: var(--green);
   font-size: 1.5rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+}
+.avatarImg {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.avatarEdit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--green);
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.avatarEdit:hover {
+  opacity: 0.85;
 }
 .name {
   font-size: 1.25rem;
@@ -54,7 +84,7 @@
   padding: 0.875rem 0;
   border-bottom: 1px solid var(--border-subtle);
 }
-.infoRow:last-child {
+.infoRow:last-of-type {
   border-bottom: none;
 }
 .infoLabel {

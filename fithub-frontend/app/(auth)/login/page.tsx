@@ -40,6 +40,8 @@ export default function LoginPage() {
 
       if (data.user.role === "ADMIN") {
         router.push("/dashboard");
+      } else if (data.user.role === "PERSONAL") {
+        router.push("/personal-painel");
       } else {
         router.push("/painel");
       }

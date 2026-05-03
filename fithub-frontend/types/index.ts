@@ -1,4 +1,4 @@
-export type UserRole = "ADMIN" | "ALUNO";
+export type UserRole = "ADMIN" | "ALUNO" | "PERSONAL";
 
 export interface User {
   id: string;
@@ -24,6 +24,8 @@ export interface Aluno {
   email: string;
   telefone: string;
   dataNascimento: string;
+  observacoes?: string;
+  fotoUrl?: string;
   ativo: boolean;
   createdAt: string;
 }

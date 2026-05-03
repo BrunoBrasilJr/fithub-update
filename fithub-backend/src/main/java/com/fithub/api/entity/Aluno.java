@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -17,7 +16,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Aluno {
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -30,6 +28,12 @@ public class Aluno {
 
     private String telefone;
     private LocalDate dataNascimento;
+
+    @Column(columnDefinition = "TEXT")
+    private String observacoes;
+
+    @Column(columnDefinition = "TEXT")
+    private String fotoUrl;
 
     @Column(nullable = false)
     private boolean ativo;

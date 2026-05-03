@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -35,6 +36,11 @@ public class AlunoController {
     @PutMapping("/{id}")
     public ResponseEntity<AlunoResponse> atualizar(@PathVariable UUID id, @RequestBody AlunoRequest request) {
         return ResponseEntity.ok(alunoService.atualizar(id, request));
+    }
+
+    @PutMapping("/{id}/foto")
+    public ResponseEntity<AlunoResponse> atualizarFoto(@PathVariable UUID id, @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(alunoService.atualizarFoto(id, body.get("fotoUrl")));
     }
 
     @DeleteMapping("/{id}")
