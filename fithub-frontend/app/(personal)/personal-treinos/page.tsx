@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 import { useSearchParams } from "next/navigation";
@@ -42,7 +42,7 @@ const DIAS = [
   "Domingo",
 ];
 
-export default function PersonalTreinosPage() {
+function PersonalTreinosContent() {
   useAuth("PERSONAL");
   const searchParams = useSearchParams();
   const alunoFiltroParam = searchParams.get("aluno");
@@ -187,7 +187,7 @@ export default function PersonalTreinosPage() {
   }
 
   function AlunoAvatar({ aluno }: { aluno: Aluno }) {
-    if (aluno.fotoUrl) {
+    if (aluno.fotoUrl)
       return (
         <img
           src={aluno.fotoUrl}
@@ -195,7 +195,6 @@ export default function PersonalTreinosPage() {
           className={styles.buscaAvatarImg}
         />
       );
-    }
     return (
       <div className={styles.buscaAvatar}>
         {aluno.nome.charAt(0).toUpperCase()}
@@ -666,5 +665,19 @@ export default function PersonalTreinosPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PersonalTreinosPage() {
+  return (
+    <Suspense
+      fallback={
+        <div style={{ padding: "2rem", color: "var(--text-muted)" }}>
+          Carregando...
+        </div>
+      }
+    >
+      <PersonalTreinosContent />
+    </Suspense>
   );
 }
