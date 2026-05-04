@@ -1,6 +1,5 @@
 package com.fithub.api.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -8,8 +7,7 @@ import lombok.Data;
 public class LoginRequest {
 
     @NotBlank
-    @Email
-    private String email;
+    private String login; // formato: usuario@dominio ou email completo pro admin
 
     @NotBlank
     private String senha;

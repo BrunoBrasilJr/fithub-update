@@ -10,6 +10,15 @@ import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import styles from "./alunos.module.css";
 
+function mascaraTelefone(valor: string): string {
+  const nums = valor.replace(/\D/g, "").slice(0, 11);
+  if (nums.length <= 2) return `(${nums}`;
+  if (nums.length <= 7) return `(${nums.slice(0, 2)}) ${nums.slice(2)}`;
+  if (nums.length <= 11)
+    return `(${nums.slice(0, 2)}) ${nums.slice(2, 7)}-${nums.slice(7)}`;
+  return valor;
+}
+
 export default function AlunosPage() {
   useAuth("ADMIN");
   const [alunos, setAlunos] = useState<Aluno[]>([]);
@@ -18,6 +27,7 @@ export default function AlunosPage() {
   const [modalDeletar, setModalDeletar] = useState<Aluno | null>(null);
   const [modalEditar, setModalEditar] = useState<Aluno | null>(null);
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
   const [fotoPreview, setFotoPreview] = useState<string>("");
   const [cameraAtiva, setCameraAtiva] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -110,6 +120,7 @@ export default function AlunosPage() {
     });
     setFotoPreview(aluno.fotoUrl || "");
     setCameraAtiva(false);
+    setFormError("");
     setModalEditar(aluno);
   }
 
@@ -125,21 +136,28 @@ export default function AlunosPage() {
     });
     setFotoPreview("");
     setCameraAtiva(false);
+    setFormError("");
     setModalCriar(true);
   }
 
   function fecharModal() {
     pararCamera();
+    setFormError("");
     setModalCriar(false);
     setModalEditar(null);
   }
 
   async function handleCriar() {
     setSaving(true);
+    setFormError("");
     try {
       await api.post("/admin/alunos", form);
       fetchAlunos();
       fecharModal();
+    } catch (err: unknown) {
+      setFormError(
+        err instanceof Error ? err.message : "Erro ao cadastrar aluno.",
+      );
     } finally {
       setSaving(false);
     }
@@ -148,10 +166,13 @@ export default function AlunosPage() {
   async function handleEditar() {
     if (!modalEditar) return;
     setSaving(true);
+    setFormError("");
     try {
       await api.put(`/admin/alunos/${modalEditar.id}`, form);
       fetchAlunos();
       fecharModal();
+    } catch (err: unknown) {
+      setFormError(err instanceof Error ? err.message : "Erro ao salvar.");
     } finally {
       setSaving(false);
     }
@@ -243,7 +264,7 @@ export default function AlunosPage() {
                     {aluno.nome.charAt(0).toUpperCase()}
                   </div>
                 )}
-                <div>
+                <div className={styles.alunoInfo}>
                   <p className={styles.cellName}>{aluno.nome}</p>
                   <p className={styles.cellSub}>{aluno.email}</p>
                   {aluno.observacoes && (
@@ -252,10 +273,12 @@ export default function AlunosPage() {
                 </div>
               </div>
               <span className={styles.cell}>{aluno.telefone || "—"}</span>
-              <Badge
-                label={aluno.ativo ? "Ativo" : "Inativo"}
-                variant={aluno.ativo ? "ativa" : "inativa"}
-              />
+              <div className={styles.badgeWrapper}>
+                <Badge
+                  label={aluno.ativo ? "Ativo" : "Inativo"}
+                  variant={aluno.ativo ? "ativa" : "inativa"}
+                />
+              </div>
               <span className={styles.cell}>
                 {new Date(aluno.createdAt).toLocaleDateString("pt-BR")}
               </span>
@@ -299,6 +322,27 @@ export default function AlunosPage() {
           }
         >
           <div className={styles.form}>
+            {formError && (
+              <div className={styles.formErrorBox}>
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                  <circle
+                    cx="8"
+                    cy="8"
+                    r="7"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M8 5V8.5M8 11H8.01"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {formError}
+              </div>
+            )}
+
             <div className={styles.fotoSection}>
               {cameraAtiva ? (
                 <div className={styles.cameraWrapper}>
@@ -447,7 +491,12 @@ export default function AlunosPage() {
               <Input
                 label="Telefone"
                 value={form.telefone}
-                onChange={(e) => setForm({ ...form, telefone: e.target.value })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    telefone: mascaraTelefone(e.target.value),
+                  })
+                }
                 placeholder="(11) 99999-9999"
               />
               <Input

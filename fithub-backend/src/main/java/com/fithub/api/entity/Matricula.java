@@ -30,6 +30,10 @@ public class Matricula {
     @JoinColumn(name = "plano_id", nullable = false)
     private Plano plano;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academia_id")
+    private Academia academia;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private StatusMatricula status;

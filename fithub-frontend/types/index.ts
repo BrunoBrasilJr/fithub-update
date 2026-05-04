@@ -1,4 +1,4 @@
-export type UserRole = "ADMIN" | "ALUNO" | "PERSONAL";
+export type UserRole = "ADMIN" | "ALUNO" | "PERSONAL" | "SUPER_ADMIN";
 
 export interface User {
   id: string;
@@ -6,6 +6,7 @@ export interface User {
   email: string;
   role: UserRole;
   primeiroAcesso: boolean;
+  ativo: boolean;
 }
 
 export interface AuthResponse {
@@ -14,7 +15,7 @@ export interface AuthResponse {
 }
 
 export interface LoginPayload {
-  email: string;
+  login: string;
   senha: string;
 }
 
@@ -76,5 +77,6 @@ export interface DashboardMetrics {
   alunosInativos: number;
   totalPlanos: number;
   matriculasAtivas: number;
+  matriculasVencidas: number;
   receitaMensal: number;
 }

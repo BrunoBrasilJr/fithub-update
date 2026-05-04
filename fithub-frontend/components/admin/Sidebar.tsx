@@ -7,6 +7,14 @@ import { useState, useEffect } from "react";
 import type { User } from "@/types";
 import styles from "./Sidebar.module.css";
 
+interface AcademiaConfig {
+  id: string;
+  dominio: string;
+  nomeAcademia: string;
+  corPrimaria: string;
+  logoUrl: string;
+}
+
 const navItems = [
   {
     label: "Visão Geral",
@@ -232,34 +240,101 @@ const navItems = [
       },
     ],
   },
+  {
+    label: "Sistema",
+    items: [
+      {
+        href: "/configuracoes",
+        label: "Configurações",
+        icon: (
+          <svg className={styles.navIcon} viewBox="0 0 20 20" fill="none">
+            <circle
+              cx="10"
+              cy="10"
+              r="3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M10 2V4M10 16V18M2 10H4M16 10H18M4.22 4.22L5.64 5.64M14.36 14.36L15.78 15.78M4.22 15.78L5.64 14.36M14.36 5.64L15.78 4.22"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        ),
+      },
+    ],
+  },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
   const { logout } = useAuth("ADMIN");
   const [user, setUser] = useState<User | null>(null);
+  const [academia, setAcademia] = useState<AcademiaConfig | null>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("fithub_user");
     if (userStr) setUser(JSON.parse(userStr));
+
+    const academiaStr = localStorage.getItem("fithub_academia");
+    if (academiaStr) setAcademia(JSON.parse(academiaStr));
   }, []);
+
+  const corAtiva = academia?.corPrimaria || "var(--green)";
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <svg className={styles.logoIcon} viewBox="0 0 32 32" fill="none">
-          <rect x="2" y="13" width="6" height="6" rx="2" fill="currentColor" />
-          <rect x="24" y="13" width="6" height="6" rx="2" fill="currentColor" />
-          <rect
-            x="10"
-            y="12"
-            width="12"
-            height="8"
-            rx="2"
-            fill="currentColor"
+        {academia?.logoUrl ? (
+          <img
+            src={academia.logoUrl}
+            alt={academia.nomeAcademia}
+            style={{
+              width: "28px",
+              height: "28px",
+              objectFit: "contain",
+              borderRadius: "6px",
+              flexShrink: 0,
+            }}
           />
-        </svg>
-        <span className={styles.logoText}>FitHub</span>
+        ) : (
+          <svg
+            className={styles.logoIcon}
+            viewBox="0 0 32 32"
+            fill="none"
+            style={{ color: corAtiva }}
+          >
+            <rect
+              x="2"
+              y="13"
+              width="6"
+              height="6"
+              rx="2"
+              fill="currentColor"
+            />
+            <rect
+              x="24"
+              y="13"
+              width="6"
+              height="6"
+              rx="2"
+              fill="currentColor"
+            />
+            <rect
+              x="10"
+              y="12"
+              width="12"
+              height="8"
+              rx="2"
+              fill="currentColor"
+            />
+          </svg>
+        )}
+        <span className={styles.logoText}>
+          {academia?.nomeAcademia || "FitHub"}
+        </span>
       </div>
 
       <nav className={styles.nav}>
@@ -271,6 +346,11 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={`${styles.navItem} ${pathname === item.href ? styles.active : ""}`}
+                style={
+                  pathname === item.href
+                    ? { color: corAtiva, background: corAtiva + "18" }
+                    : {}
+                }
               >
                 {item.icon}
                 {item.label}
@@ -282,10 +362,26 @@ export function Sidebar() {
 
       <div className={styles.footer}>
         <div className={styles.user}>
-          <div className={styles.avatar}>
-            {user?.nome?.charAt(0).toUpperCase() || "A"}
+          <div
+            className={styles.avatar}
+            style={{ background: corAtiva + "20", color: corAtiva }}
+          >
+            {academia?.logoUrl ? (
+              <img
+                src={academia.logoUrl}
+                alt={academia.nomeAcademia}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  borderRadius: "50%",
+                }}
+              />
+            ) : (
+              user?.nome?.charAt(0).toUpperCase() || "A"
+            )}
           </div>
-          <div>
+          <div className={styles.userInfo}>
             <p className={styles.userName}>{user?.nome || ""}</p>
             <p className={styles.userRole}>Administrador</p>
           </div>

@@ -30,7 +30,6 @@ public class UserController {
 
     @GetMapping("/foto")
     public ResponseEntity<Map<String, String>> buscarFoto(Principal principal) {
-        String fotoUrl = userService.buscarFoto(principal.getName());
-        return ResponseEntity.ok(Map.of("fotoUrl", fotoUrl != null ? fotoUrl : ""));
+        return ResponseEntity.ok(userService.buscarInfoAluno(principal.getName()));
     }
 }

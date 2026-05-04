@@ -33,6 +33,10 @@ public class Plano {
 
     private String descricao;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academia_id")
+    private Academia academia;
+
     public enum TipoPlano {
         MENSAL, TRIMESTRAL, SEMESTRAL, ANUAL
     }

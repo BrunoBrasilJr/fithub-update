@@ -3,7 +3,9 @@ package com.fithub.api.controller;
 import com.fithub.api.dto.treino.HistoricoTreinoResponse;
 import com.fithub.api.dto.treino.TreinoRequest;
 import com.fithub.api.dto.treino.TreinoResponse;
+import com.fithub.api.security.AcademiaContextHelper;
 import com.fithub.api.service.TreinoService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,10 +20,12 @@ import java.util.UUID;
 public class TreinoController {
 
     private final TreinoService treinoService;
+    private final AcademiaContextHelper academiaContextHelper;
 
     @GetMapping("/admin/treinos")
-    public ResponseEntity<List<TreinoResponse>> listar() {
-        return ResponseEntity.ok(treinoService.listar());
+    public ResponseEntity<List<TreinoResponse>> listar(HttpServletRequest request) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(request);
+        return ResponseEntity.ok(treinoService.listar(academiaId));
     }
 
     @GetMapping("/admin/treinos/{id}")
@@ -35,8 +39,9 @@ public class TreinoController {
     }
 
     @PostMapping("/admin/treinos")
-    public ResponseEntity<TreinoResponse> criar(@RequestBody TreinoRequest request) {
-        return ResponseEntity.ok(treinoService.criar(request));
+    public ResponseEntity<TreinoResponse> criar(@RequestBody TreinoRequest request, HttpServletRequest httpRequest) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(httpRequest);
+        return ResponseEntity.ok(treinoService.criar(request, academiaId));
     }
 
     @PutMapping("/admin/treinos/{id}")

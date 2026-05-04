@@ -91,9 +91,17 @@ export default function AniversariantesPage() {
               key={aluno.id}
               className={`${styles.card} ${aluno.dataNascimento && isHoje(aluno.dataNascimento) ? styles.hoje : ""}`}
             >
-              <div className={styles.avatar}>
-                {aluno.nome.charAt(0).toUpperCase()}
-              </div>
+              {aluno.fotoUrl ? (
+                <img
+                  src={aluno.fotoUrl}
+                  alt={aluno.nome}
+                  className={styles.avatarImg}
+                />
+              ) : (
+                <div className={styles.avatar}>
+                  {aluno.nome.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className={styles.info}>
                 <p className={styles.nome}>{aluno.nome}</p>
                 <p className={styles.email}>{aluno.email}</p>

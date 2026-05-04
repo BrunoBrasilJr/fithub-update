@@ -8,15 +8,13 @@ import { Badge } from "@/components/ui/Badge";
 import styles from "./plano.module.css";
 
 export default function PlanoPage() {
-  const { getUser } = useAuth();
+  useAuth();
   const [matricula, setMatricula] = useState<Matricula | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const user = getUser();
-    if (!user) return;
     api
-      .get<Matricula[]>(`/aluno/matriculas?alunoId=${user.id}`)
+      .get<Matricula[]>(`/aluno/matriculas`)
       .then((data) => {
         const ativa = data.find((m) => m.status === "ATIVA") || data[0] || null;
         setMatricula(ativa);

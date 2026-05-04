@@ -12,5 +12,6 @@ public class DashboardResponse {
     private long alunosInativos;
     private long totalPlanos;
     private long matriculasAtivas;
+    private long matriculasVencidas;
     private BigDecimal receitaMensal;
 }

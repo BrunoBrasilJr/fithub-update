@@ -6,6 +6,15 @@ import { api } from "@/lib/api";
 import type { Treino, Exercicio } from "@/types";
 import styles from "./treino.module.css";
 import jsPDF from "jspdf";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 interface RegistroCarga {
   id: string;
@@ -59,6 +68,8 @@ export default function TreinoPage() {
         `/aluno/treinos/${treinoId}/concluido-semana`,
       );
       setJaFeito(res.concluido);
+    } catch {
+      setJaFeito(false);
     } finally {
       setCheckando(false);
     }
@@ -163,26 +174,62 @@ export default function TreinoPage() {
     }
   }
 
-  function gerarPDF() {
+  async function gerarPDF() {
     if (!selected) return;
+
+    const config = await api
+      .get<{
+        nomeAcademia: string;
+        corPrimaria: string;
+        logoUrl: string;
+      }>("/public/configuracao")
+      .catch(() => ({
+        nomeAcademia: "FitHub",
+        corPrimaria: "#16a34a",
+        logoUrl: "",
+      }));
+
+    const cor = config.corPrimaria || "#16a34a";
+    const r = parseInt(cor.slice(1, 3), 16);
+    const g = parseInt(cor.slice(3, 5), 16);
+    const b = parseInt(cor.slice(5, 7), 16);
+
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
 
-    // Header
-    doc.setFillColor(22, 163, 74);
+    doc.setFillColor(r, g, b);
     doc.rect(0, 0, pageWidth, 40, "F");
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("FitHub", 20, 18);
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "normal");
-    doc.text("Ficha de Treino", 20, 28);
+
+    if (config.logoUrl) {
+      try {
+        doc.addImage(config.logoUrl, "JPEG", 15, 8, 24, 24);
+        doc.setFontSize(22);
+        doc.setFont("helvetica", "bold");
+        doc.text(config.nomeAcademia, 44, 18);
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Ficha de Treino", 44, 28);
+      } catch {
+        doc.setFontSize(22);
+        doc.setFont("helvetica", "bold");
+        doc.text(config.nomeAcademia, 20, 18);
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "normal");
+        doc.text("Ficha de Treino", 20, 28);
+      }
+    } else {
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text(config.nomeAcademia, 20, 18);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.text("Ficha de Treino", 20, 28);
+    }
+
     doc.text(new Date().toLocaleDateString("pt-BR"), pageWidth - 20, 28, {
       align: "right",
     });
-
-    // Info aluno e treino
     doc.setTextColor(30, 30, 30);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
@@ -195,15 +242,11 @@ export default function TreinoPage() {
       20,
       63,
     );
-    if (selected.descricao) {
-      doc.text(selected.descricao, 20, 70);
-    }
+    if (selected.descricao) doc.text(selected.descricao, 20, 70);
 
-    // Linha separadora
     doc.setDrawColor(220, 220, 220);
     doc.line(20, 75, pageWidth - 20, 75);
 
-    // Cabeçalho da tabela
     let y = 85;
     doc.setFillColor(245, 245, 245);
     doc.rect(20, y - 6, pageWidth - 40, 10, "F");
@@ -215,7 +258,6 @@ export default function TreinoPage() {
     doc.text("REPETIÇÕES", 135, y);
     doc.text("CARGA", 170, y);
 
-    // Exercícios
     y += 8;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
@@ -250,11 +292,11 @@ export default function TreinoPage() {
       }
     });
 
-    // Rodapé
     doc.setTextColor(180, 180, 180);
     doc.setFontSize(8);
-    doc.text("Gerado pelo FitHub", pageWidth / 2, 285, { align: "center" });
-
+    doc.text(`Gerado por ${config.nomeAcademia}`, pageWidth / 2, 285, {
+      align: "center",
+    });
     doc.save(`treino-${selected.nome.toLowerCase().replace(/\s/g, "-")}.pdf`);
   }
 
@@ -263,6 +305,11 @@ export default function TreinoPage() {
     selected?.exercicios?.filter((ex) => concluidos.has(ex.id)).length || 0;
   const todosFeitos =
     totalExercicios > 0 && totalConcluidos === totalExercicios;
+
+  const chartData = evolucaoData.map((r) => ({
+    data: new Date(r.registradoEm).toLocaleDateString("pt-BR"),
+    kg: parseFloat(r.carga) || 0,
+  }));
 
   return (
     <div className={styles.page}>
@@ -441,6 +488,7 @@ export default function TreinoPage() {
         </>
       )}
 
+      {/* Modal de carga */}
       {modalCarga && selected && (
         <div
           className={styles.evolucaoModal}
@@ -512,6 +560,7 @@ export default function TreinoPage() {
         </div>
       )}
 
+      {/* Modal de evolução com gráfico */}
       {evolucaoEx && (
         <div
           className={styles.evolucaoModal}
@@ -521,44 +570,114 @@ export default function TreinoPage() {
             className={styles.evolucaoBox}
             onClick={(e) => e.stopPropagation()}
           >
-            <p className={styles.evolucaoTitulo}>
-              Evolução — {evolucaoEx.nome}
-            </p>
+            <div className={styles.evolucaoModalHeader}>
+              <p className={styles.evolucaoTitulo}>
+                Evolução — {evolucaoEx.nome}
+              </p>
+              <button
+                className={styles.evolucaoFecharX}
+                onClick={() => setEvolucaoEx(null)}
+              >
+                ✕
+              </button>
+            </div>
+
             {loadingEvolucao ? (
-              <p className={styles.evolucaoEmpty}>Carregando</p>
+              <p className={styles.evolucaoEmpty}>Carregando...</p>
             ) : evolucaoData.length === 0 ? (
               <p className={styles.evolucaoEmpty}>
-                Nenhum registro de carga ainda.
+                Nenhum registro de carga ainda. Conclua um treino para começar.
               </p>
             ) : (
-              evolucaoData.map((r, i) => {
-                const anterior = evolucaoData[i - 1];
-                let comp: "progresso" | "regresso" | "igual" | null = null;
-                if (anterior) {
-                  const atual = parseFloat(r.carga);
-                  const ant = parseFloat(anterior.carga);
-                  if (!isNaN(atual) && !isNaN(ant)) {
-                    if (atual > ant) comp = "progresso";
-                    else if (atual < ant) comp = "regresso";
-                    else comp = "igual";
-                  }
-                }
-                return (
-                  <div key={r.id} className={styles.evolucaoItem}>
-                    <span className={styles.evolucaoData}>
-                      {new Date(r.registradoEm).toLocaleDateString("pt-BR")}
-                    </span>
-                    <span
-                      className={`${styles.evolucaoCarga} ${comp === "progresso" ? styles.cargaProgresso : comp === "regresso" ? styles.cargaRegresso : ""}`}
-                    >
-                      {r.carga}
-                      {comp === "progresso" && " ▲"}
-                      {comp === "regresso" && " ▼"}
-                    </span>
+              <>
+                {evolucaoData.length >= 1 && (
+                  <div className={styles.chartWrapper}>
+                    <ResponsiveContainer width="100%" height={180}>
+                      <LineChart
+                        data={chartData}
+                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="rgba(255,255,255,0.05)"
+                        />
+                        <XAxis
+                          dataKey="data"
+                          tick={{ fontSize: 10, fill: "#888" }}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 10, fill: "#888" }}
+                          unit="kg"
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            background: "var(--bg-card)",
+                            border: "1px solid var(--border)",
+                            borderRadius: "8px",
+                            fontSize: "12px",
+                          }}
+                          formatter={(value) => [`${value}kg`, "Carga"]}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="kg"
+                          stroke="#16a34a"
+                          strokeWidth={2}
+                          dot={{ fill: "#16a34a", r: 4 }}
+                          activeDot={{ r: 6 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
-                );
-              })
+                )}
+
+                <div className={styles.evolucaoTabela}>
+                  <div className={styles.evolucaoTabelaHeader}>
+                    <span>Data</span>
+                    <span>Carga</span>
+                    <span>Variação</span>
+                  </div>
+                  {evolucaoData.map((r, i) => {
+                    const anterior = evolucaoData[i - 1];
+                    let comp: "progresso" | "regresso" | "igual" | null = null;
+                    let diff = "";
+                    if (anterior) {
+                      const atual = parseFloat(r.carga);
+                      const ant = parseFloat(anterior.carga);
+                      if (!isNaN(atual) && !isNaN(ant)) {
+                        const d = atual - ant;
+                        if (d > 0) {
+                          comp = "progresso";
+                          diff = `+${d}kg`;
+                        } else if (d < 0) {
+                          comp = "regresso";
+                          diff = `${d}kg`;
+                        } else {
+                          comp = "igual";
+                          diff = "=";
+                        }
+                      }
+                    }
+                    return (
+                      <div key={r.id} className={styles.evolucaoTabelaRow}>
+                        <span className={styles.evolucaoData}>
+                          {new Date(r.registradoEm).toLocaleDateString("pt-BR")}
+                        </span>
+                        <span className={styles.evolucaoCargaValor}>
+                          {r.carga}
+                        </span>
+                        <span
+                          className={`${styles.evolucaoVariacao} ${comp === "progresso" ? styles.cargaProgresso : comp === "regresso" ? styles.cargaRegresso : ""}`}
+                        >
+                          {diff || "—"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
             )}
+
             <button
               className={styles.evolucaoFechar}
               onClick={() => setEvolucaoEx(null)}

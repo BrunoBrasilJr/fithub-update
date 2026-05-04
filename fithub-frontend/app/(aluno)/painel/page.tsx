@@ -3,16 +3,19 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
+import { useRouter } from "next/navigation";
 import type { Treino, Matricula } from "@/types";
 import styles from "./painel.module.css";
 
 export default function PainelPage() {
   const { getUser } = useAuth();
+  const router = useRouter();
   const [nome, setNome] = useState("");
   const [greeting, setGreeting] = useState("");
   const [treinos, setTreinos] = useState<Treino[]>([]);
   const [matriculas, setMatriculas] = useState<Matricula[]>([]);
   const [loading, setLoading] = useState(true);
+  const [treinoDetalhe, setTreinoDetalhe] = useState<Treino | null>(null);
 
   useEffect(() => {
     const user = getUser();
@@ -23,8 +26,8 @@ export default function PainelPage() {
     setNome(user.nome?.split(" ")[0] || "");
 
     Promise.all([
-      api.get<Treino[]>(`/aluno/treinos?alunoId=${user.id}`),
-      api.get<Matricula[]>(`/aluno/matriculas?alunoId=${user.id}`),
+      api.get<Treino[]>(`/aluno/treinos`),
+      api.get<Matricula[]>(`/aluno/matriculas`),
     ])
       .then(([t, m]) => {
         setTreinos(t);
@@ -44,7 +47,9 @@ export default function PainelPage() {
   const diasRestantes = matriculaAtiva
     ? diasParaVencer(matriculaAtiva.dataFim)
     : null;
-  const vencendoEmBreve =
+  const vencendo30 =
+    diasRestantes !== null && diasRestantes <= 30 && diasRestantes > 7;
+  const vencendo7 =
     diasRestantes !== null && diasRestantes <= 7 && diasRestantes >= 0;
   const vencido = diasRestantes !== null && diasRestantes < 0;
 
@@ -80,7 +85,7 @@ export default function PainelPage() {
         </div>
       )}
 
-      {vencendoEmBreve && (
+      {vencendo7 && (
         <div className={styles.alertaWarning}>
           <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
             <circle
@@ -99,6 +104,28 @@ export default function PainelPage() {
           </svg>
           Seu plano vence em {diasRestantes} dia{diasRestantes !== 1 ? "s" : ""}
           . Renove em breve para não perder o acesso.
+        </div>
+      )}
+
+      {vencendo30 && (
+        <div className={styles.alertaInfo}>
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+            <circle
+              cx="10"
+              cy="10"
+              r="8"
+              stroke="currentColor"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M10 6V10.5M10 13H10.01"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+          Seu plano vence em {diasRestantes} dias. Fique atento para renovar no
+          prazo.
         </div>
       )}
 
@@ -138,7 +165,7 @@ export default function PainelPage() {
             </svg>
           </div>
           <p className={styles.cardValue}>
-            {matriculaAtiva ? matriculaAtiva.plano?.nome : "—"}
+            {matriculaAtiva?.plano?.nome || "—"}
           </p>
           <p className={styles.cardLabel}>Plano atual</p>
         </div>
@@ -163,7 +190,25 @@ export default function PainelPage() {
       </div>
 
       <div className={styles.section}>
-        <p className={styles.sectionTitle}>Meus Treinos</p>
+        <div className={styles.sectionHeader}>
+          <p className={styles.sectionTitle}>Meus Treinos</p>
+          {treinos.length > 0 && (
+            <button
+              className={styles.atalhoTreino}
+              onClick={() => router.push("/treino")}
+            >
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M2 10H4M16 10H18M4 10C4 10 4 7 7 7C10 7 10 13 13 13C16 13 16 10 16 10"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              Ir para Meu Treino
+            </button>
+          )}
+        </div>
         {loading ? (
           <p className={styles.empty}>Carregando...</p>
         ) : treinos.length === 0 ? (
@@ -178,14 +223,86 @@ export default function PainelPage() {
                     {treino.diaSemana || "Sem dia definido"}
                   </p>
                 </div>
-                <p className={styles.treinoCount}>
-                  {treino.exercicios?.length || 0} exercícios
-                </p>
+                <div className={styles.treinoRight}>
+                  <p className={styles.treinoCount}>
+                    {treino.exercicios?.length || 0} exercícios
+                  </p>
+                  <button
+                    className={styles.verBtn}
+                    onClick={() => setTreinoDetalhe(treino)}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                      <path
+                        d="M2.5 10C2.5 10 5 4.5 10 4.5C15 4.5 17.5 10 17.5 10C17.5 10 15 15.5 10 15.5C5 15.5 2.5 10 2.5 10Z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                      <circle
+                        cx="10"
+                        cy="10"
+                        r="2.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {treinoDetalhe && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => setTreinoDetalhe(null)}
+        >
+          <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <p className={styles.modalTitulo}>{treinoDetalhe.nome}</p>
+              <button
+                className={styles.modalFechar}
+                onClick={() => setTreinoDetalhe(null)}
+              >
+                ✕
+              </button>
+            </div>
+            <div className={styles.modalBody}>
+              <p className={styles.modalMeta}>
+                {treinoDetalhe.diaSemana || "Sem dia definido"} ·{" "}
+                {treinoDetalhe.exercicios?.length || 0} exercícios
+              </p>
+              {treinoDetalhe.descricao && (
+                <p className={styles.modalDesc}>{treinoDetalhe.descricao}</p>
+              )}
+              <div className={styles.exerciciosList}>
+                {treinoDetalhe.exercicios?.map((ex, i) => (
+                  <div key={ex.id} className={styles.exercicioItem}>
+                    <div className={styles.exercicioNum}>{i + 1}</div>
+                    <div>
+                      <p className={styles.exercicioNome}>{ex.nome}</p>
+                      <p className={styles.exercicioMeta}>
+                        {ex.series}x {ex.repeticoes}
+                        {ex.carga ? ` · ${ex.carga}` : ""}
+                        {ex.observacao ? ` · ${ex.observacao}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button
+                className={styles.fecharBtn}
+                onClick={() => setTreinoDetalhe(null)}
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

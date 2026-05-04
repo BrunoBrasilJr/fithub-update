@@ -32,6 +32,10 @@ public class Treino {
     @JoinColumn(name = "aluno_id", nullable = false)
     private Aluno aluno;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academia_id")
+    private Academia academia;
+
     @OneToMany(mappedBy = "treino", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Exercicio> exercicios;
 

@@ -2,11 +2,14 @@ package com.fithub.api.controller;
 
 import com.fithub.api.dto.matricula.MatriculaRequest;
 import com.fithub.api.dto.matricula.MatriculaResponse;
+import com.fithub.api.security.AcademiaContextHelper;
 import com.fithub.api.service.MatriculaService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,10 +18,12 @@ import java.util.UUID;
 public class MatriculaController {
 
     private final MatriculaService matriculaService;
+    private final AcademiaContextHelper academiaContextHelper;
 
     @GetMapping("/admin/matriculas")
-    public ResponseEntity<List<MatriculaResponse>> listar() {
-        return ResponseEntity.ok(matriculaService.listar());
+    public ResponseEntity<List<MatriculaResponse>> listar(HttpServletRequest request) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(request);
+        return ResponseEntity.ok(matriculaService.listar(academiaId));
     }
 
     @GetMapping("/admin/matriculas/aluno/{alunoId}")
@@ -27,8 +32,9 @@ public class MatriculaController {
     }
 
     @PostMapping("/admin/matriculas")
-    public ResponseEntity<MatriculaResponse> criar(@RequestBody MatriculaRequest request) {
-        return ResponseEntity.ok(matriculaService.criar(request));
+    public ResponseEntity<MatriculaResponse> criar(@RequestBody MatriculaRequest request, HttpServletRequest httpRequest) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(httpRequest);
+        return ResponseEntity.ok(matriculaService.criar(request, academiaId));
     }
 
     @PutMapping("/admin/matriculas/{id}")
@@ -43,7 +49,7 @@ public class MatriculaController {
     }
 
     @GetMapping("/aluno/matriculas")
-    public ResponseEntity<List<MatriculaResponse>> listarMinhasMatriculas(@RequestParam UUID alunoId) {
-        return ResponseEntity.ok(matriculaService.listarPorAluno(alunoId));
+    public ResponseEntity<List<MatriculaResponse>> listarMinhasMatriculas(Principal principal) {
+        return ResponseEntity.ok(matriculaService.listarPorEmail(principal.getName()));
     }
 }

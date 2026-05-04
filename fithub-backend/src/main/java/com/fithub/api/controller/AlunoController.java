@@ -2,7 +2,9 @@ package com.fithub.api.controller;
 
 import com.fithub.api.dto.aluno.AlunoRequest;
 import com.fithub.api.dto.aluno.AlunoResponse;
+import com.fithub.api.security.AcademiaContextHelper;
 import com.fithub.api.service.AlunoService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +19,12 @@ import java.util.UUID;
 public class AlunoController {
 
     private final AlunoService alunoService;
+    private final AcademiaContextHelper academiaContextHelper;
 
     @GetMapping
-    public ResponseEntity<List<AlunoResponse>> listar() {
-        return ResponseEntity.ok(alunoService.listar());
+    public ResponseEntity<List<AlunoResponse>> listar(HttpServletRequest request) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(request);
+        return ResponseEntity.ok(alunoService.listar(academiaId));
     }
 
     @GetMapping("/{id}")
@@ -29,8 +33,9 @@ public class AlunoController {
     }
 
     @PostMapping
-    public ResponseEntity<AlunoResponse> criar(@RequestBody AlunoRequest request) {
-        return ResponseEntity.ok(alunoService.criar(request));
+    public ResponseEntity<AlunoResponse> criar(@RequestBody AlunoRequest request, HttpServletRequest httpRequest) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(httpRequest);
+        return ResponseEntity.ok(alunoService.criar(request, academiaId));
     }
 
     @PutMapping("/{id}")

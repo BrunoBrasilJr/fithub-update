@@ -112,7 +112,8 @@ export default function MatriculasPage() {
           <span className={styles.tableHeaderCell}>Aluno</span>
           <span className={styles.tableHeaderCell}>Plano</span>
           <span className={styles.tableHeaderCell}>Status</span>
-          <span className={styles.tableHeaderCell}>Vigência</span>
+          <span className={styles.tableHeaderCell}>Início</span>
+          <span className={styles.tableHeaderCell}>Fim</span>
           <span className={styles.tableHeaderCell}></span>
         </div>
 
@@ -123,14 +124,18 @@ export default function MatriculasPage() {
         ) : (
           matriculas.map((m) => (
             <div key={m.id} className={styles.tableRow}>
-              <div>
+              <div className={styles.alunoCell}>
                 <p className={styles.cellName}>{m.aluno?.nome}</p>
                 <p className={styles.cellSub}>{m.aluno?.email}</p>
               </div>
               <span className={styles.cell}>{m.plano?.nome}</span>
-              <Badge label={m.status} variant={statusVariant[m.status]} />
+              <div className={styles.badgeWrapper}>
+                <Badge label={m.status} variant={statusVariant[m.status]} />
+              </div>
               <span className={styles.cell}>
-                {new Date(m.dataInicio).toLocaleDateString("pt-BR")} —{" "}
+                {new Date(m.dataInicio).toLocaleDateString("pt-BR")}
+              </span>
+              <span className={styles.cell}>
                 {new Date(m.dataFim).toLocaleDateString("pt-BR")}
               </span>
               <div className={styles.actions}>

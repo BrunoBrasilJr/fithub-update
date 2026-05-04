@@ -383,3 +383,70 @@
   border-color: var(--green);
   color: var(--green);
 }
+.evolucaoModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.evolucaoFecharX {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.125rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.chartWrapper {
+  margin-bottom: 1rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 1rem 0.5rem 0.5rem;
+}
+
+.evolucaoTabela {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.evolucaoTabelaHeader {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 0.625rem 1rem;
+  background: var(--bg-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.evolucaoTabelaRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 0.875rem;
+  align-items: center;
+}
+
+.evolucaoTabelaRow:hover {
+  background: var(--bg-hover);
+}
+
+.evolucaoCargaValor {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.evolucaoVariacao {
+  font-weight: 600;
+  font-size: 0.8125rem;
+}

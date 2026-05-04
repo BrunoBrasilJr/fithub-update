@@ -7,4 +7,7 @@ public class FuncionarioRequest {
     private String nome;
     private String email;
     private String role;
+    private String telefone;
+    private String dataNascimento;
+    private String fotoUrl;
 }

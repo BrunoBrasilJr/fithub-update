@@ -121,6 +121,27 @@ export default function DashboardPage() {
       ),
     },
     {
+      label: "Matrículas Vencidas",
+      value: metrics?.matriculasVencidas ?? 0,
+      icon: (
+        <svg viewBox="0 0 20 20" fill="none">
+          <path
+            d="M6 2V5M14 2V5M3 8H17M4 4H16C16.5523 4 17 4.44772 17 5V17C17 17.5523 18 16 18H4C3.44772 18 3 17.5523 3 17V5C3 4.44772 3.44772 4 4 4Z"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+          />
+          <path
+            d="M8 11L10 13L13 10"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
       label: "Receita Mensal",
       value: metrics
         ? `R$ ${Number(metrics.receitaMensal).toFixed(2)}`

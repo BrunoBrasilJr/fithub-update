@@ -9,7 +9,7 @@ import styles from "./SidebarPersonal.module.css";
 
 const navItems = [
   {
-    href: "/personal/personal-painel",
+    href: "/personal-painel",
     label: "Painel",
     icon: (
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
@@ -53,12 +53,27 @@ const navItems = [
     ),
   },
   {
-    href: "/personal/personal-treinos",
+    href: "/personal-treinos",
     label: "Treinos",
     icon: (
       <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
         <path
           d="M2 10H4M16 10H18M4 10C4 10 4 7 7 7C10 7 10 13 13 13C16 13 16 10 16 10"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
+  {
+    href: "/personal-perfil",
+    label: "Meu Perfil",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M4 17C4 14.2386 6.68629 12 10 12C13.3137 12 16 14.2386 16 17"
           stroke="currentColor"
           strokeWidth="1.5"
           strokeLinecap="round"
@@ -72,10 +87,18 @@ export function SidebarPersonal() {
   const pathname = usePathname();
   const { logout } = useAuth();
   const [user, setUser] = useState<User | null>(null);
+  const [fotoUrl, setFotoUrl] = useState("");
 
   useEffect(() => {
     const userStr = localStorage.getItem("fithub_user");
     if (userStr) setUser(JSON.parse(userStr));
+
+    import("@/lib/api").then(({ api }) => {
+      api
+        .get<{ fotoUrl: string }>("/personal/perfil")
+        .then((res) => setFotoUrl(res.fotoUrl || ""))
+        .catch(() => {});
+    });
   }, []);
 
   return (
@@ -112,10 +135,14 @@ export function SidebarPersonal() {
 
       <div className={styles.footer}>
         <div className={styles.user}>
-          <div className={styles.avatar}>
-            {user?.nome?.charAt(0).toUpperCase() || "P"}
-          </div>
-          <div>
+          {fotoUrl ? (
+            <img src={fotoUrl} alt={user?.nome} className={styles.avatarImg} />
+          ) : (
+            <div className={styles.avatar}>
+              {user?.nome?.charAt(0).toUpperCase() || "P"}
+            </div>
+          )}
+          <div className={styles.userInfo}>
             <p className={styles.userName}>{user?.nome || ""}</p>
             <p className={styles.userRole}>Personal Trainer</p>
           </div>

@@ -7,6 +7,14 @@ import { useState, useEffect } from "react";
 import type { User } from "@/types";
 import styles from "./SidebarAluno.module.css";
 
+interface AcademiaConfig {
+  id: string;
+  dominio: string;
+  nomeAcademia: string;
+  corPrimaria: string;
+  logoUrl: string;
+}
+
 const navItems = [
   {
     href: "/painel",
@@ -126,28 +134,77 @@ export function SidebarAluno() {
   const pathname = usePathname();
   const { logout } = useAuth();
   const [user, setUser] = useState<User | null>(null);
+  const [fotoUrl, setFotoUrl] = useState("");
+  const [academia, setAcademia] = useState<AcademiaConfig | null>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("fithub_user");
     if (userStr) setUser(JSON.parse(userStr));
+
+    const academiaStr = localStorage.getItem("fithub_academia");
+    if (academiaStr) setAcademia(JSON.parse(academiaStr));
+
+    import("@/lib/api").then(({ api }) => {
+      api
+        .get<{ fotoUrl: string }>("/user/foto")
+        .then((res) => setFotoUrl(res.fotoUrl || ""))
+        .catch(() => {});
+    });
   }, []);
+
+  const corAtiva = academia?.corPrimaria || "var(--green)";
 
   return (
     <aside className={styles.sidebar}>
       <div className={styles.logo}>
-        <svg className={styles.logoIcon} viewBox="0 0 32 32" fill="none">
-          <rect x="2" y="13" width="6" height="6" rx="2" fill="currentColor" />
-          <rect x="24" y="13" width="6" height="6" rx="2" fill="currentColor" />
-          <rect
-            x="10"
-            y="12"
-            width="12"
-            height="8"
-            rx="2"
-            fill="currentColor"
+        {academia?.logoUrl ? (
+          <img
+            src={academia.logoUrl}
+            alt={academia.nomeAcademia}
+            style={{
+              width: "28px",
+              height: "28px",
+              objectFit: "contain",
+              borderRadius: "6px",
+              flexShrink: 0,
+            }}
           />
-        </svg>
-        <span className={styles.logoText}>FitHub</span>
+        ) : (
+          <svg
+            className={styles.logoIcon}
+            viewBox="0 0 32 32"
+            fill="none"
+            style={{ color: corAtiva }}
+          >
+            <rect
+              x="2"
+              y="13"
+              width="6"
+              height="6"
+              rx="2"
+              fill="currentColor"
+            />
+            <rect
+              x="24"
+              y="13"
+              width="6"
+              height="6"
+              rx="2"
+              fill="currentColor"
+            />
+            <rect
+              x="10"
+              y="12"
+              width="12"
+              height="8"
+              rx="2"
+              fill="currentColor"
+            />
+          </svg>
+        )}
+        <span className={styles.logoText}>
+          {academia?.nomeAcademia || "FitHub"}
+        </span>
       </div>
 
       <nav className={styles.nav}>
@@ -156,6 +213,11 @@ export function SidebarAluno() {
             key={item.href}
             href={item.href}
             className={`${styles.navItem} ${pathname === item.href ? styles.active : ""}`}
+            style={
+              pathname === item.href
+                ? { color: corAtiva, background: corAtiva + "18" }
+                : {}
+            }
           >
             {item.icon}
             {item.label}
@@ -165,10 +227,29 @@ export function SidebarAluno() {
 
       <div className={styles.footer}>
         <div className={styles.user}>
-          <div className={styles.avatar}>
-            {user?.nome?.charAt(0).toUpperCase() || "A"}
-          </div>
-          <div>
+          {fotoUrl ? (
+            <img src={fotoUrl} alt={user?.nome} className={styles.avatarImg} />
+          ) : academia?.logoUrl ? (
+            <img
+              src={academia.logoUrl}
+              alt={academia.nomeAcademia}
+              style={{
+                width: "32px",
+                height: "32px",
+                objectFit: "contain",
+                borderRadius: "50%",
+                flexShrink: 0,
+              }}
+            />
+          ) : (
+            <div
+              className={styles.avatar}
+              style={{ background: corAtiva + "20", color: corAtiva }}
+            >
+              {user?.nome?.charAt(0).toUpperCase() || "A"}
+            </div>
+          )}
+          <div className={styles.userInfo}>
             <p className={styles.userName}>{user?.nome || "Aluno"}</p>
             <p className={styles.userRole}>Aluno</p>
           </div>

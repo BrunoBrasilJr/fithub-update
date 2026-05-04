@@ -1,22 +1,97 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import type { AuthResponse, LoginPayload } from "@/types";
+import type { AuthResponse } from "@/types";
 import styles from "./login.module.css";
+
+interface AcademiaConfig {
+  id: string;
+  dominio: string;
+  nomeAcademia: string;
+  corPrimaria: string;
+  logoUrl: string;
+}
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [login, setLogin] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [academia, setAcademia] = useState<AcademiaConfig | null>(null);
+  const [loadingTema, setLoadingTema] = useState(false);
+  const [corBotao, setCorBotao] = useState<string | null>(null);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const partes = login.split("@");
+    if (partes.length !== 2 || partes[1].trim() === "") {
+      resetTema();
+      setAcademia(null);
+      setCorBotao(null);
+      return;
+    }
+
+    const dominio = partes[1].trim().toLowerCase();
+    if (dominio.includes(".")) {
+      resetTema();
+      setAcademia(null);
+      setCorBotao(null);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setLoadingTema(true);
+      try {
+        const res = await fetch(
+          `http://localhost:8080/public/academia?dominio=${dominio}`,
+        );
+        if (!res.ok) {
+          resetTema();
+          setAcademia(null);
+          setCorBotao(null);
+          return;
+        }
+        const data: AcademiaConfig = await res.json();
+        setAcademia(data);
+        setCorBotao(data.corPrimaria);
+        aplicarTema(data.corPrimaria);
+      } catch {
+        resetTema();
+        setAcademia(null);
+        setCorBotao(null);
+      } finally {
+        setLoadingTema(false);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [login]);
+
+  function aplicarTema(cor: string) {
+    const root = document.documentElement;
+    root.style.setProperty("--green", cor);
+    root.style.setProperty("--green-subtle", cor + "20");
+    root.style.setProperty("--shadow-green", `0 4px 24px ${cor}40`);
+  }
+
+  function resetTema() {
+    const root = document.documentElement;
+    root.style.removeProperty("--green");
+    root.style.removeProperty("--green-subtle");
+    root.style.removeProperty("--shadow-green");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!email || !senha) {
+    if (!login || !senha) {
       setError("Preencha todos os campos.");
       return;
     }
@@ -26,19 +101,27 @@ export default function LoginPage() {
 
     try {
       const data = await api.post<AuthResponse>("/auth/login", {
-        email,
+        login,
         senha,
-      } as LoginPayload);
+      });
 
       localStorage.setItem("fithub_token", data.token);
       localStorage.setItem("fithub_user", JSON.stringify(data.user));
+      if (academia) {
+        localStorage.setItem("fithub_academia", JSON.stringify(academia));
+      }
 
       if (data.user.primeiroAcesso) {
         router.push("/trocar-senha");
         return;
       }
 
-      if (data.user.role === "ADMIN") {
+      if (data.user.role === "SUPER_ADMIN") {
+        setCorBotao("#a855f7");
+        aplicarTema("#a855f7");
+        setTimeout(() => router.push("/super-dashboard"), 300);
+        return;
+      } else if (data.user.role === "ADMIN") {
         router.push("/dashboard");
       } else if (data.user.role === "PERSONAL") {
         router.push("/personal-painel");
@@ -56,6 +139,8 @@ export default function LoginPage() {
     }
   }
 
+  const corAtiva = corBotao || academia?.corPrimaria || "#22c55e";
+
   return (
     <div className={styles.container}>
       <div className={styles.background}>
@@ -66,48 +151,72 @@ export default function LoginPage() {
 
       <div className={styles.card}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>
-            <svg
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect
-                x="2"
-                y="13"
-                width="6"
-                height="6"
-                rx="2"
-                fill="currentColor"
+          <div className={styles.logoIcon} style={{ color: corAtiva }}>
+            {academia?.logoUrl ? (
+              <img
+                src={academia.logoUrl}
+                alt={academia.nomeAcademia}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain",
+                  borderRadius: "6px",
+                }}
               />
-              <rect
-                x="24"
-                y="13"
-                width="6"
-                height="6"
-                rx="2"
-                fill="currentColor"
-              />
-              <rect
-                x="8"
-                y="10"
-                width="16"
-                height="12"
-                rx="3"
-                fill="currentColor"
-                opacity="0.3"
-              />
-              <rect
-                x="10"
-                y="12"
-                width="12"
-                height="8"
-                rx="2"
-                fill="currentColor"
-              />
-            </svg>
+            ) : (
+              <svg
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  x="2"
+                  y="13"
+                  width="6"
+                  height="6"
+                  rx="2"
+                  fill="currentColor"
+                />
+                <rect
+                  x="24"
+                  y="13"
+                  width="6"
+                  height="6"
+                  rx="2"
+                  fill="currentColor"
+                />
+                <rect
+                  x="8"
+                  y="10"
+                  width="16"
+                  height="12"
+                  rx="3"
+                  fill="currentColor"
+                  opacity="0.3"
+                />
+                <rect
+                  x="10"
+                  y="12"
+                  width="12"
+                  height="8"
+                  rx="2"
+                  fill="currentColor"
+                />
+              </svg>
+            )}
           </div>
-          <span className={styles.logoText}>FitHub</span>
+          <span className={styles.logoText}>
+            {academia ? academia.nomeAcademia : "FitHub"}
+          </span>
+          {loadingTema && <span className={styles.temaBadge}>...</span>}
+          {academia && !loadingTema && (
+            <span
+              className={styles.temaBadge}
+              style={{ background: corAtiva + "20", color: corAtiva }}
+            >
+              {academia.dominio}
+            </span>
+          )}
         </div>
 
         <div className={styles.header}>
@@ -119,8 +228,8 @@ export default function LoginPage() {
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
-            <label className={styles.label} htmlFor="email">
-              E-mail
+            <label className={styles.label} htmlFor="login">
+              Login
             </label>
             <div className={styles.inputWrapper}>
               <svg className={styles.inputIcon} viewBox="0 0 20 20" fill="none">
@@ -133,13 +242,13 @@ export default function LoginPage() {
                 />
               </svg>
               <input
-                id="email"
-                type="email"
+                id="login"
+                type="text"
                 className={styles.input}
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
+                placeholder="usuario@academia ou email@email.com"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
+                autoComplete="username"
                 disabled={loading}
               />
             </div>
@@ -239,6 +348,7 @@ export default function LoginPage() {
           <button
             type="submit"
             className={styles.submitButton}
+            style={{ background: corAtiva }}
             disabled={loading}
           >
             {loading ? (

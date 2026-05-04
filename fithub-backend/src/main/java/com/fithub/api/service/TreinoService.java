@@ -4,11 +4,13 @@ import com.fithub.api.dto.treino.ExercicioRequest;
 import com.fithub.api.dto.treino.HistoricoTreinoResponse;
 import com.fithub.api.dto.treino.TreinoRequest;
 import com.fithub.api.dto.treino.TreinoResponse;
+import com.fithub.api.entity.Academia;
 import com.fithub.api.entity.Aluno;
 import com.fithub.api.entity.Exercicio;
 import com.fithub.api.entity.HistoricoTreino;
 import com.fithub.api.entity.Treino;
 import com.fithub.api.entity.User;
+import com.fithub.api.repository.AcademiaRepository;
 import com.fithub.api.repository.AlunoRepository;
 import com.fithub.api.repository.HistoricoTreinoRepository;
 import com.fithub.api.repository.TreinoRepository;
@@ -34,8 +36,14 @@ public class TreinoService {
     private final AlunoRepository alunoRepository;
     private final HistoricoTreinoRepository historicoTreinoRepository;
     private final UserRepository userRepository;
+    private final AcademiaRepository academiaRepository;
 
-    public List<TreinoResponse> listar() {
+    public List<TreinoResponse> listar(UUID academiaId) {
+        if (academiaId != null) {
+            return treinoRepository.findByAcademiaId(academiaId).stream()
+                    .map(TreinoResponse::from)
+                    .collect(Collectors.toList());
+        }
         return treinoRepository.findAll().stream()
                 .map(TreinoResponse::from)
                 .collect(Collectors.toList());
@@ -63,15 +71,20 @@ public class TreinoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Treino não encontrado"));
     }
 
-    public TreinoResponse criar(TreinoRequest request) {
+    public TreinoResponse criar(TreinoRequest request, UUID academiaId) {
         Aluno aluno = alunoRepository.findById(request.getAlunoId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Aluno não encontrado"));
+
+        Academia academia = academiaId != null
+                ? academiaRepository.findById(academiaId).orElse(null)
+                : null;
 
         Treino treino = Treino.builder()
                 .nome(request.getNome())
                 .descricao(request.getDescricao())
                 .diaSemana(request.getDiaSemana())
                 .aluno(aluno)
+                .academia(academia)
                 .build();
 
         if (request.getExercicios() != null) {

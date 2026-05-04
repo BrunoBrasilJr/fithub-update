@@ -14,6 +14,9 @@ public class FuncionarioResponse {
     private String email;
     private String role;
     private boolean ativo;
+    private String telefone;
+    private String dataNascimento;
+    private String fotoUrl;
     private String createdAt;
 
     public static FuncionarioResponse from(User user) {
@@ -23,6 +26,9 @@ public class FuncionarioResponse {
                 .email(user.getEmail())
                 .role(user.getRole().name())
                 .ativo(user.isAtivo())
+                .telefone(user.getTelefone())
+                .dataNascimento(user.getDataNascimento() != null ? user.getDataNascimento().toString() : null)
+                .fotoUrl(user.getFotoUrl())
                 .createdAt(user.getCreatedAt().toString())
                 .build();
     }

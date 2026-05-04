@@ -1,6 +1,6 @@
 .sidebar {
   width: 240px;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
@@ -9,6 +9,7 @@
   top: 0;
   left: 0;
   z-index: 50;
+  overflow: hidden;
 }
 
 .logo {
@@ -17,18 +18,23 @@
   gap: 0.625rem;
   padding: 1.5rem;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .logoIcon {
   width: 30px;
   height: 30px;
   color: var(--green);
+  flex-shrink: 0;
 }
 
 .logoText {
   font-size: 1.125rem;
   font-weight: 700;
   letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .nav {
@@ -37,6 +43,21 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
 }
 
 .navLabel {
@@ -46,6 +67,8 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 0.75rem 0.75rem 0.375rem;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .navItem {
@@ -60,6 +83,9 @@
   transition: var(--transition);
   cursor: pointer;
   text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .navItem:hover {
@@ -81,6 +107,7 @@
 .footer {
   padding: 1rem 0.75rem;
   border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .user {
@@ -90,6 +117,12 @@
   padding: 0.625rem 0.75rem;
   border-radius: var(--radius-md);
   margin-bottom: 0.25rem;
+  overflow: hidden;
+}
+
+.userInfo {
+  flex: 1;
+  min-width: 0;
 }
 
 .avatar {
@@ -106,6 +139,14 @@
   flex-shrink: 0;
 }
 
+.avatarImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
 .userName {
   font-size: 0.875rem;
   font-weight: 500;
@@ -118,4 +159,5 @@
 .userRole {
   font-size: 0.75rem;
   color: var(--text-muted);
+  white-space: nowrap;
 }

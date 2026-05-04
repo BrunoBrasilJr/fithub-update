@@ -11,6 +11,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -40,11 +43,22 @@ public class UserService {
         return fotoUrl;
     }
 
-    public String buscarFoto(String email) {
+    public Map<String, String> buscarInfoAluno(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuário não encontrado"));
-        return alunoRepository.findByUser(user)
-                .map(Aluno::getFotoUrl)
-                .orElse(null);
+
+        Map<String, String> info = new HashMap<>();
+
+        alunoRepository.findByUser(user).ifPresent(aluno -> {
+            info.put("fotoUrl", aluno.getFotoUrl() != null ? aluno.getFotoUrl() : "");
+            info.put("telefone", aluno.getTelefone() != null ? aluno.getTelefone() : "");
+            info.put("dataNascimento", aluno.getDataNascimento() != null ? aluno.getDataNascimento().toString() : "");
+        });
+
+        if (!info.containsKey("fotoUrl")) info.put("fotoUrl", "");
+        if (!info.containsKey("telefone")) info.put("telefone", "");
+        if (!info.containsKey("dataNascimento")) info.put("dataNascimento", "");
+
+        return info;
     }
 }

@@ -42,6 +42,10 @@ public class Aluno {
     @JoinColumn(name = "user_id")
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "academia_id")
+    private Academia academia;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

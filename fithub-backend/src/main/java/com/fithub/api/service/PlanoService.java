@@ -2,7 +2,9 @@ package com.fithub.api.service;
 
 import com.fithub.api.dto.plano.PlanoRequest;
 import com.fithub.api.dto.plano.PlanoResponse;
+import com.fithub.api.entity.Academia;
 import com.fithub.api.entity.Plano;
+import com.fithub.api.repository.AcademiaRepository;
 import com.fithub.api.repository.PlanoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,8 +20,14 @@ import java.util.stream.Collectors;
 public class PlanoService {
 
     private final PlanoRepository planoRepository;
+    private final AcademiaRepository academiaRepository;
 
-    public List<PlanoResponse> listar() {
+    public List<PlanoResponse> listar(UUID academiaId) {
+        if (academiaId != null) {
+            return planoRepository.findByAcademiaId(academiaId).stream()
+                    .map(PlanoResponse::from)
+                    .collect(Collectors.toList());
+        }
         return planoRepository.findAll().stream()
                 .map(PlanoResponse::from)
                 .collect(Collectors.toList());
@@ -31,12 +39,17 @@ public class PlanoService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Plano não encontrado"));
     }
 
-    public PlanoResponse criar(PlanoRequest request) {
+    public PlanoResponse criar(PlanoRequest request, UUID academiaId) {
+        Academia academia = academiaId != null
+                ? academiaRepository.findById(academiaId).orElse(null)
+                : null;
+
         Plano plano = Plano.builder()
                 .nome(request.getNome())
                 .tipo(Plano.TipoPlano.valueOf(request.getTipo()))
                 .valor(request.getValor())
                 .descricao(request.getDescricao())
+                .academia(academia)
                 .build();
         return PlanoResponse.from(planoRepository.save(plano));
     }

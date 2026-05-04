@@ -5,6 +5,7 @@ import com.fithub.api.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +15,6 @@ public interface AlunoRepository extends JpaRepository<Aluno, UUID> {
     Optional<Aluno> findByUser(User user);
     boolean existsByEmail(String email);
     long countByAtivo(boolean ativo);
+    List<Aluno> findByAcademiaId(UUID academiaId);
+    long countByAtivoAndAcademiaId(boolean ativo, UUID academiaId);
 }

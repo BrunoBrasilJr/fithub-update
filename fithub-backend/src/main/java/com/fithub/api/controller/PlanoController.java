@@ -2,7 +2,9 @@ package com.fithub.api.controller;
 
 import com.fithub.api.dto.plano.PlanoRequest;
 import com.fithub.api.dto.plano.PlanoResponse;
+import com.fithub.api.security.AcademiaContextHelper;
 import com.fithub.api.service.PlanoService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,10 +18,12 @@ import java.util.UUID;
 public class PlanoController {
 
     private final PlanoService planoService;
+    private final AcademiaContextHelper academiaContextHelper;
 
     @GetMapping
-    public ResponseEntity<List<PlanoResponse>> listar() {
-        return ResponseEntity.ok(planoService.listar());
+    public ResponseEntity<List<PlanoResponse>> listar(HttpServletRequest request) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(request);
+        return ResponseEntity.ok(planoService.listar(academiaId));
     }
 
     @GetMapping("/{id}")
@@ -28,8 +32,9 @@ public class PlanoController {
     }
 
     @PostMapping
-    public ResponseEntity<PlanoResponse> criar(@RequestBody PlanoRequest request) {
-        return ResponseEntity.ok(planoService.criar(request));
+    public ResponseEntity<PlanoResponse> criar(@RequestBody PlanoRequest request, HttpServletRequest httpRequest) {
+        UUID academiaId = academiaContextHelper.getAcademiaIdFromRequest(httpRequest);
+        return ResponseEntity.ok(planoService.criar(request, academiaId));
     }
 
     @PutMapping("/{id}")
